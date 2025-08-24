@@ -9,5 +9,5 @@ seaborn
 catboost
 xgboost
 mlflow
-# ipykernel
 lightgbm
+plotly
