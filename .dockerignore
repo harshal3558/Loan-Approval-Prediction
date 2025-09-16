@@ -1,0 +1,20 @@
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore dataset files (large and unnecessary in build context)
+data/
+*.csv
+
+# Ignore logs and temporary files
+logs/
+*.log
+
+# Ignore environment files with sensitive info
+.env
+
+# Ignore Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ignore git directory
+.git/
