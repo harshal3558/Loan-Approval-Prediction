@@ -1,20 +1,85 @@
-# Ignore Python cache files
+# =========================
+# Python cache & temp files
+# =========================
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Ignore dataset files (large and unnecessary in build context)
-data/
-*.csv
+# =========================
+# Virtual environments
+# =========================
+env/
+venv/
+.venv/
+dev/
 
-# Ignore logs and temporary files
+# =========================
+# Git & version control
+# =========================
+.git/
+.gitignore
+.github/
+
+# =========================
+# IDE / Editor configs
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Logs
+# =========================
 logs/
 *.log
 
-# Ignore environment files with sensitive info
-.env
+# =========================
+# Data & ML artifacts
+# (Exclude if models/data
+# are loaded from cloud or mounted)
+# =========================
+data/
+artifacts/
 
-# Ignore Jupyter notebooks checkpoints
+# =========================
+# Jupyter notebooks
+# =========================
+notebook/
 .ipynb_checkpoints/
 
-# Ignore git directory
-.git/
+# =========================
+# DVC
+# =========================
+.dvc/
+.dvcignore
+
+# =========================
+# Environment & secrets
+# =========================
+.env
+
+# =========================
+# OS-specific files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Build / packaging
+# =========================
+DIAP.egg-info/
+build/
+dist/
+
+# =========================
+# Documentation files
+# (optional – remove if needed in image)
+# =========================
+*.pdf
+*.docx
+
+# =========================
+# Exclude unused scripts
+# =========================
+template.py
+setup.py

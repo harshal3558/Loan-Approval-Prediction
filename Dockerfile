@@ -1,18 +1,50 @@
-# Use an official Python image
-FROM python:3.9-slim
 
-# Set the working directory in the container
+# =========================
+# 1. Base image
+# =========================
+FROM python:3.10-slim
+
+# =========================
+# 2. Environment settings
+# =========================
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# =========================
+# 3. Set working directory
+# =========================
 WORKDIR /app
 
-# Copy your project files to the container
-COPY . /src
-COPY . /artifacts
+# =========================
+# 4. Install system dependencies
+# (required for numpy, pandas, sklearn)
+# =========================
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies from requirements.txt
+# =========================
+# 5. Copy requirements first (Docker cache optimization)
+# =========================
+COPY requirements.txt .
+
+# =========================
+# 6. Install Python dependencies
+# =========================
 RUN pip install --no-cache-dir -r requirements.txt
 
-# (Optional) Set environment variables
-# ENV MODEL_PATH=/app/model.pkl
+# =========================
+# 7. Copy project files
+# =========================
+COPY . .
 
-# Default command to run your ML script (change "model.py" to your entry point)
-CMD ["python", "main.py"]
+# =========================
+# 8. Expose port (Flask/FastAPI)
+# =========================
+EXPOSE 5000
+
+# =========================
+# 9. Run application
+# =========================
+# CMD ["python", "application.py"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "application:app"]
