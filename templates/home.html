@@ -1,118 +1,164 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title>Loan Default Prediction</title>
+    <title>Loan Approval Prediction</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; }
-        input, select { width: 100%; padding: 8px; }
-        .btn { background-color: #007bff; color: white; padding: 10px; border: none; cursor: pointer; }
-        .btn:hover { background-color: #0056b3; }
-        fieldset { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; }
-        legend { font-size: 1.2em; font-weight: bold; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; color: #34495e; margin-bottom: 8px; font-size: 14px; }
+        input, select { 
+            width: 100%; padding: 12px 15px; border: 2px solid #e1e8ed; 
+            border-radius: 8px; font-size: 16px; transition: all 0.3s ease;
+        }
+        input:focus, select:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
+        fieldset { 
+            border: none; padding: 0; margin-bottom: 30px; 
+        }
+        legend { 
+            font-size: 1.4em; font-weight: 700; color: #2c3e50; 
+            margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #3498db;
+        }
+        .btn { 
+            background: linear-gradient(135deg, #3498db, #2980b9); 
+            color: white; padding: 15px 40px; border: none; 
+            border-radius: 50px; cursor: pointer; font-size: 16px; 
+            font-weight: 600; width: 100%; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(52,152,219,0.4);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(52,152,219,0.6); }
+        .results-container { 
+            margin-top: 30px; padding: 25px; 
+            background: linear-gradient(135deg, #e8f5e8, #d4edda); 
+            border-radius: 15px; border-left: 6px solid #28a745;
+            animation: slideIn 0.5s ease-out;
+        }
+        .results-container.error { 
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb); 
+            border-left-color: #dc3545;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-header { 
+            font-size: 1.8em; font-weight: 700; margin-bottom: 15px; 
+        }
+        .result-text { 
+            font-size: 2.2em; font-weight: 800; padding: 15px 25px; 
+            border-radius: 12px; display: inline-block; margin: 10px 0;
+        }
+        .approved { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .rejected { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+        .iframe-container { 
+            margin-top: 25px; border: 2px solid rgba(255,255,255,0.8); 
+            border-radius: 15px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        iframe { width: 100%; height: 350px; border: none; }
     </style>
 </head>
 <body>
-    <h1>Loan Default Prediction Form</h1>
-    <form action="{{ url_for('predict_datapoint') }}" method="post">
+    <div class="container">
+        <h1>🏦 Loan Approval Prediction</h1>
+        
+        <form action="{{ url_for('predict_datapoint') }}" method="post">
+            <fieldset>
+                <legend>👤 Applicant Information</legend>
+                
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select name="Gender" required>
+                        <option value="" disabled selected>Select Gender...</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
 
-        <fieldset>
-            <legend>Applicant Information</legend>
-            
-            <div class="form-group">
-                <label>Gender</label>
-                <select name="Gender" required>
-                    <option value="" disabled selected hidden>Select Gender...</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label>Married</label>
+                    <select name="Married" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label>Married</label>
-                <select name="Married" required>
-                    <option value="" disabled selected hidden>Select...</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label>Dependents</label>
+                    <select name="Dependents" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3+">3+</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label>Dependents</label>
-                <select name="Dependents" required>
-                    <option value="" disabled selected hidden>Select...</option>
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3+">3+</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label>Education</label>
+                    <select name="Education" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="Graduate">Graduate</option>
+                        <option value="Not Graduate">Not Graduate</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label>Education</label>
-                <select name="Education" required>
-                    <option value="" disabled selected hidden>Select...</option>
-                    <option value="Graduate">Graduate</option>
-                    <option value="Not Graduate">Not Graduate</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label>Self Employed</label>
+                    <select name="Self_Employed" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </fieldset>
 
-            <div class="form-group">
-                <label>Self Employed</label>
-                <select name="Self_Employed" required>
-                    <option value="" disabled selected hidden>Select...</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                </select>
-            </div>
-        </fieldset>
+            <fieldset>
+                <legend>💰 Financial Information</legend>
 
-        <fieldset>
-            <legend>Financial Information</legend>
+                <div class="form-group">
+                    <label>Applicant Income</label>
+                    <input type="number" name="ApplicantIncome" min="0" placeholder="e.g. 5000" required>
+                </div>
 
-            <div class="form-group">
-                <label>Applicant Income</label>
-                <input type="number" name="ApplicantIncome" min="0" placeholder="e.g. 5000" required>
-            </div>
+                <div class="form-group">
+                    <label>Coapplicant Income</label>
+                    <input type="number" name="CoapplicantIncome" min="0" placeholder="e.g. 2000" required>
+                </div>
 
-            <div class="form-group">
-                <label>Coapplicant Income</label>
-                <input type="number" name="CoapplicantIncome" min="0" placeholder="e.g. 2000" required>
-            </div>
+                <div class="form-group">
+                    <label>Loan Amount (in $1000s)</label>
+                    <input type="number" name="LoanAmount" min="0" step="0.01" placeholder="e.g. 150" required>
+                </div>
 
-            <div class="form-group">
-                <label>Loan Amount (in $1000s)</label>
-                <input type="number" name="LoanAmount" min="0" placeholder="e.g. 150" required>
-            </div>
+                <div class="form-group">
+                    <label>Loan Amount Term (in days)</label>
+                    <input type="number" name="Loan_Amount_Term" min="0" placeholder="e.g. 360" required>
+                </div>
 
-            <div class="form-group">
-                <label>Loan Amount Term (in days)</label>
-                <input type="number" name="Loan_Amount_Term" min="0" placeholder="e.g. 360" required>
-            </div>
+                <div class="form-group">
+                    <label>Credit History</label>
+                    <select name="Credit_History" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="1.0">Good (Meets Guidelines)</option>
+                        <option value="0.0">Bad (Doesn't Meet Guidelines)</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label>Credit History</label>
-                <select name="Credit_History" required>
-                    <option value="" disabled selected hidden>Select...</option>
-                    <option value="1.0">Good (Meets Guidelines)</option>
-                    <option value="0.0">Bad (Doesn't Meet Guidelines)</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label>Property Area</label>
+                    <select name="Property_Area" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="Urban">Urban</option>
+                        <option value="Semiurban">Semiurban</option>
+                        <option value="Rural">Rural</option>
+                    </select>
+                </div>
+            </fieldset>
 
-            <div class="form-group">
-                <label>Property Area</label>
-                <select name="Property_Area" required>
-                    <option value="" disabled selected hidden>Select...</option>
-                    <option value="Urban">Urban</option>
-                    <option value="Semiurban">Semiurban</option>
-                    <option value="Rural">Rural</option>
-                </select>
-            </div>
-        </fieldset>
-
-        <button type="submit" class="btn">Predict Loan Approval</button>
-    </form>
-
-    <h2>Prediction result: {{ results }}</h2>
-</body>
-</html>
+            <button type="submit" class="btn">🚀 Predict Loan Approval

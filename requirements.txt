@@ -12,3 +12,4 @@ mlflow
 lightgbm
 plotly
 mlflow
+pytest
