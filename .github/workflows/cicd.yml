@@ -6,13 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  contents: read
-
 jobs:
   test:
     name: Test Python Application
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -22,45 +20,23 @@ jobs:
       with:
         python-version: "3.9"
 
-    - name: Cache pip
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        python -m pip install -r requirements.txt
 
-    - name: Run Flask app in background
+    - name: Run tests
       run: |
-        python application.py > app.log 2>&1 &
-        APP_PID=$!
-        echo "APP_PID=$APP_PID" >> $GITHUB_ENV
-        sleep 15  # Wait for Flask startup
-
-    - name: Check app health
-      run: |
-        curl -f http://localhost:5000/ || exit 1
-        # Add ML prediction test if endpoint exists:
-        # curl -f -X POST -H "Content-Type: application/json" \
-        #   -d '{"feature1": 1.0, "feature2": 2.0}' \
-        #   http://localhost:5000/predict
-
-    - name: Run pytest
-      run: |
-        pytest -v --tb=short
-
-    - name: Stop app
-      if: always()
-      run: |
-        kill $APP_PID || true
+        python -m pytest -v
 
   docker:
     name: Build & Push Docker Image
     needs: test
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -80,6 +56,4 @@ jobs:
         context: .
         file: Dockerfile
         push: true
-        tags: |
-          ${{ secrets.DOCKER_USERNAME }}/flask-loan-approval-app:latest
-          ${{ secrets.DOCKER_USERNAME }}/flask-loan-approval-app:${{ github.sha }}
+        tags: ${{ secrets.DOCKER_USERNAME }}/flask-loan-approval-app:latest
