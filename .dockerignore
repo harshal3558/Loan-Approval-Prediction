@@ -42,7 +42,7 @@ logs/
 # are loaded from cloud or mounted)
 # =========================
 data/
-artifacts/
+# artifacts/
 
 # =========================
 # Jupyter notebooks
