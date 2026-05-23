@@ -97,6 +97,11 @@ docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/loan-app:latest
 5. **Enable logging** → forward container logs to CloudWatch for monitoring.
 
 ---
+## 📹 Demo Video
+Watch the deployment walkthrough:
+[Deployment Video](https://drive.google.com/file/d/1XPcGe21EjQXIbaMoPnQJstcbxX67TR3I/view?usp=sharing)
+
+---
 
 ## 🔌 API Reference
 | Method | Endpoint | Description | Example |
