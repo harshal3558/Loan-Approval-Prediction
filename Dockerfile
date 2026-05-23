@@ -1,21 +1,20 @@
-
 # =========================
-# 1️⃣ Builder stage – install build‑time deps
+# 1️⃣ Builder stage – install deps
 # =========================
 FROM python:3.10-slim AS builder
 
-# System dependencies required for building wheels (numpy, pandas, scikit‑learn)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Create a virtual environment in /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+RUN python -m venv $VIRTUAL_ENV
 
-WORKDIR /src
+# Ensure pip is up‑to‑date
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN pip install --upgrade pip
 
-# Install Python deps into a virtual environment
+# Install application dependencies
+# (Assumes you have a requirements.txt at the repository root)
 COPY requirements.txt .
-RUN python -m venv /opt/venv && \
-    /opt/venv/bin/pip install --upgrade pip && \
-    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # =========================
 # 2️⃣ Runtime stage – minimal image for ECS
@@ -26,23 +25,23 @@ FROM python:3.10-slim
 RUN useradd --create-home appuser
 WORKDIR /app
 
-# Copy only the installed packages from builder
+# Copy the virtual environment from the builder stage
 COPY --from=builder /opt/venv /opt/venv
 
-# Copy application source code
+# Copy the application source code
 COPY . .
 
-# Use the virtual‑env's Python
+# Adjust ownership so the non‑root user can read/write
+RUN chown -R appuser:appuser /app
+
+# Activate the virtual‑env's Python
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Expose the port your app listens on
-EXPOSE 5000
+# (Optional) Remove the healthcheck if you haven’t set it up yet
+# HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+#   CMD curl -f http://localhost:5000/health || exit 1
 
-# Optional health‑check (adjust endpoint if needed)
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD curl -f http://localhost:5000/health || exit 1
-
-# Run as non‑root
+# Run as the non‑root user
 USER appuser
 
 # Start the service with gunicorn
