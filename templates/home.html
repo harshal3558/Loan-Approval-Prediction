@@ -161,4 +161,23 @@
                 </div>
             </fieldset>
 
-            <button type="submit" class="btn">🚀 Predict Loan Approval
+            <button type="submit" class="btn">🚀 Predict Loan Approval</button>
+        </form>
+
+        {% if results != None %}
+        <div class="results-container {% if results == 'N' %}error{% endif %}">
+            <div class="result-header">Prediction Result:</div>
+            <div class="result-text {% if results == 'Y' %}approved{% else %}rejected{% endif %}">
+                {% if results == 'Y' %}
+                    Loan Approved 🎉
+                {% elif results == 'N' %}
+                    Loan Rejected ❌
+                {% else %}
+                    Error in prediction
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

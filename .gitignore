@@ -203,6 +203,15 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# DVC
+.dvc/
+.dvcignore
+/artifacts/
+
+# Docker
+.docker/
+docker-compose.override.yml
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

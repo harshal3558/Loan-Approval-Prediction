@@ -1,3 +1,41 @@
 # Add patterns of files dvc should ignore, which could improve
 # the performance. Learn more at
 # https://dvc.org/doc/user-guide/dvcignore
+
+# Virtual environments
+.venv/
+venv/
+env/
+lenv/
+
+# Build & packaging
+build/
+dist/
+*.egg-info/
+
+# IDE & editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs & temp files
+*.log
+logs/
+
+# Jupyter notebooks & checkpoints
+notebook/
+*.ipynb
+.ipynb_checkpoints/
+
+# Tests
+tests/
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.pdf
+*.docx

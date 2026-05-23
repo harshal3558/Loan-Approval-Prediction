@@ -13,6 +13,7 @@ env/
 venv/
 .venv/
 dev/
+lenv/
 
 # =========================
 # Git & version control
@@ -26,6 +27,8 @@ dev/
 # =========================
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # =========================
 # Logs
@@ -67,7 +70,8 @@ Thumbs.db
 # =========================
 # Build / packaging
 # =========================
-DIAP.egg-info/
+LAP.egg-info/
+*.egg
 build/
 dist/
 
@@ -77,6 +81,48 @@ dist/
 # =========================
 *.pdf
 *.docx
+
+# =========================
+# Tests
+# =========================
+tests/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+.hypothesis/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+.pytype/
+
+# =========================
+# Docker & compose
+# =========================
+.docker/
+docker-compose.override.yml
+.dockerignore
+Dockerfile
+
+# =========================
+# Documentation
+# =========================
+README.md
+
+# =========================
+# Cache & temp files
+# =========================
+.ruff_cache/
+__pycache__/
+
+# =========================
+# Marimo & other tools
+# =========================
+__marimo__/
+marimo/_static/
+marimo/_lsp/
+.cursorignore
 
 # =========================
 # Exclude unused scripts
