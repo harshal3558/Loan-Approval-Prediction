@@ -2,9 +2,10 @@ import os
 import sys
 from dataclasses import dataclass
 from urllib.parse import urlparse
+import numpy as np
 
 import mlflow
-import numpy as np
+
 import dagshub
 import joblib
 
@@ -42,14 +43,29 @@ class ModelTrainer:
 
     # ✅ Fixed to handle Y/N labels
     def eval_metrics(self, actual, pred):
+        """Calculate accuracy, precision, and F1 score.
+
+        The positive class is inferred from the training labels. If the label set
+        contains "Y"/"N" we treat "Y" as positive; otherwise we use the first label
+        (typically the majority class).
+        """
+        # Determine positive label
+        unique_labels = np.unique(actual)
+        if len(unique_labels) == 2 and "Y" in unique_labels:
+            pos_label = "Y"
+        else:
+            # Fallback: use the first label (could be majority)
+            pos_label = unique_labels[0]
         accuracy = accuracy_score(actual, pred)
-        precision = precision_score(actual, pred, pos_label="Y")
-        f1 = f1_score(actual, pred, pos_label="Y")
+        precision = precision_score(actual, pred, pos_label=pos_label)
+        f1 = f1_score(actual, pred, pos_label=pos_label)
         return accuracy, precision, f1
 
     def initiate_model_trainer(self, train_array, test_array):
         try:
-            logging.info("Splitting training and testing input data")
+            # Ensure stdout can handle Unicode (emoji) for mlflow logging
+            if hasattr(sys.stdout, "reconfigure"):
+                sys.stdout.reconfigure(encoding='utf-8')
             X_train, y_train, X_test, y_test = (
                 train_array[:, :-1],
                 train_array[:, -1],

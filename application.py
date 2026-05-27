@@ -39,7 +39,7 @@ def predict_datapoint():
         pipeline = PredictPipeline()
         result = pipeline.predict(pred_df)
 
-        prediction = "🔴 Loan Rejected" if result[0] == 1 else "🟢 Loan Approved"
+        prediction = "🔴 Loan Rejected" if result[0] == 'N' else "🟢 Loan Approved"
 
         return f"""
         <div style="font-size:18px; font-weight:bold; text-align:center;">
@@ -56,4 +56,4 @@ def predict_datapoint():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

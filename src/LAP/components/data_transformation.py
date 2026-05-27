@@ -1,10 +1,10 @@
-import sys
 import os
+import sys
 from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler,OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -67,57 +67,85 @@ class DataTransformation:
         except Exception as e:
             raise CustomException(e,sys)
         
-    def initiate_data_transformation(self,train_path,test_path):
+    def initiate_data_transformation(self, train_path, test_path):
+        """Read train and test CSVs, infer column types dynamically, build preprocessing pipeline, and return transformed arrays.
+
+        Returns:
+            tuple: (train_array, test_array, preprocessor_path)
+        """
         try:
-            train_df=pd.read_csv(train_path)
-            test_df=pd.read_csv(test_path)
+            # Load data
+            train_df = pd.read_csv(train_path)
+            test_df = pd.read_csv(test_path)
+            logging.info('Reading the train and test files')
 
-            logging.info('Reading the train and test file')
+            # Identify target column
+            target_column_name = 'Loan_Status'
+            if target_column_name not in train_df.columns or target_column_name not in test_df.columns:
+                raise CustomException(f"Target column '{target_column_name}' not found in input data", sys)
 
-            preprocessing_obj=self.get_data_transformation_object()
+            # Separate features and target
+            X_train = train_df.drop(columns=[target_column_name])
+            y_train = train_df[target_column_name]
+            X_test = test_df.drop(columns=[target_column_name])
+            y_test = test_df[target_column_name]
 
-            target_column_name='Loan_Status'
-            continuous_numerical_columns = ['LoanAmount','CoapplicantIncome','ApplicantIncome']
-            categorical_columns = ['Gender','Married','Dependents','Education','Self_Employed','Property_Area']
-            
-            ## divide the train dataset to idependent and dependent feature
+            # Dynamically infer column types
+            categorical_cols = X_train.select_dtypes(include=['object', 'category']).columns.tolist()
+            numeric_cols = X_train.select_dtypes(include=[np.number]).columns.tolist()
 
-            input_feature_train_df=train_df.drop(columns=[target_column_name],axis=1)
-            target_feature_train_df=train_df[target_column_name]
+            # Split numeric columns into discrete (few unique values) and continuous
+            discrete_numeric_cols = [c for c in numeric_cols if X_train[c].nunique() < 10]
+            continuous_numeric_cols = [c for c in numeric_cols if c not in discrete_numeric_cols]
 
-            ## divide the test dataset to independent and dependent feature
+            # Pipelines
+            discrete_num_pipeline = Pipeline([
+                ('imputer', SimpleImputer(strategy='most_frequent')),
+                ('scaler', StandardScaler())
+            ])
+            continuous_num_pipeline = Pipeline([
+                ('imputer', SimpleImputer(strategy='median')),
+                ('scaler', StandardScaler())
+            ])
+            cat_pipeline = Pipeline([
+                ('imputer', SimpleImputer(strategy='most_frequent')),
+                ('one_hot_encoder', OneHotEncoder(handle_unknown='ignore'))
+            ])
 
-            input_feature_test_df=test_df.drop(columns=[target_column_name],axis=1)
-            target_feature_test_df=test_df[target_column_name]
+            # ColumnTransformer
+            preprocessor = ColumnTransformer([
+                ('discrete', discrete_num_pipeline, discrete_numeric_cols),
+                ('continuous', continuous_num_pipeline, continuous_numeric_cols),
+                ('categorical', cat_pipeline, categorical_cols)
+            ])
 
-            logging.info("Applying Preprocessing on training and test dataframe")
+            logging.info('Applying preprocessing on training and test dataframes')
+            X_train_arr = preprocessor.fit_transform(X_train)
+            X_test_arr = preprocessor.transform(X_test)
 
-            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df)
-            input_feature_test_arr=preprocessing_obj.transform(input_feature_test_df)
+            # Ensure dense array
+            if hasattr(X_train_arr, "toarray"):
+                X_train_arr = X_train_arr.toarray()
+            if hasattr(X_test_arr, "toarray"):
+                X_test_arr = X_test_arr.toarray()
 
+            # Ensure 2D
+            if X_train_arr.ndim == 1: X_train_arr = X_train_arr.reshape(-1, 1)
+            if X_test_arr.ndim == 1: X_test_arr = X_test_arr.reshape(-1, 1)
 
-            train_arr = np.c_[
-                input_feature_train_arr, np.array(target_feature_train_df)
-            ]
-            test_arr = np.c_[input_feature_test_arr, np.array(target_feature_test_df)]
+            # Log shapes
+            logging.info(f"X_train_arr shape: {X_train_arr.shape}, y_train shape: {y_train.shape}")
+            logging.info(f"X_test_arr shape: {X_test_arr.shape}, y_test shape: {y_test.shape}")
 
-            logging.info(f"Saved preprocessing object")
+            # Combine features and target back into arrays
+            train_arr = np.c_[X_train_arr, np.array(y_train).reshape(-1, 1)]
+            test_arr = np.c_[X_test_arr, np.array(y_test).reshape(-1, 1)]
 
-            save_object(
+            # Save preprocessing object
+            preprocessor_path = self.data_transformation_config.preprocessor_obj_file_path
+            save_object(file_path=preprocessor_path, obj=preprocessor)
+            logging.info(f"Saved preprocessing object to {preprocessor_path}")
 
-                file_path=self.data_transformation_config.preprocessor_obj_file_path,
-                obj=preprocessing_obj
-            )
-
-            return (
-
-                train_arr,
-                test_arr,
-                self.data_transformation_config.preprocessor_obj_file_path
-            )
-
-
-
-
+            return train_arr, test_arr, preprocessor_path
         except Exception as e:
-            raise CustomException(e,sys)
+            raise CustomException(e, sys)
