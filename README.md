@@ -8,6 +8,7 @@ An end-to-end machine-learning web application that predicts loan approval eligi
 
 - **Goal**: Automate loan eligibility decisions using classical ML classifiers with a clean, user-friendly web form.
 - **Dataset**: ~600 records from the Loan Prediction dataset (`notebook/data/loan.csv`), with an 80/20 train-test split.
+- **Target**: `Loan_Status` column where `'Y'` means loan approved and `'N'` means loan not approved.
 
 ---
 
